@@ -170,7 +170,7 @@ defmodule HttpMessageParser.Parser do
     options: "OPTIONS",
     head: "HEAD"
   ]
-  @http_versions ["HTTP/0.9", "HTTP/1.0", "HTTP/1.1", "HTTP/2.0"]
+  @http_versions ["HTTP/0.9", "HTTP/1.0", "HTTP/1.1", "HTTP/2.0", "HTTP/2"]
 
   @spec parse_request(binary) :: {:error, atom | {atom, binary}} | {:ok, Request}
   def parse_request(message) do
