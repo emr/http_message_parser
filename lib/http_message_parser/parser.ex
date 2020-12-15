@@ -15,7 +15,8 @@ defmodule HttpMessageParser.Parser do
     path: "/users/1",
     http_version: "HTTP/1.1",
     body: "",
-    headers: %{}
+    headers: %{},
+    params: %{}
   }}
   ```
 
@@ -54,7 +55,8 @@ defmodule HttpMessageParser.Parser do
       "Host" => "github.com",
       " Spaced Header  Example  " => "example value",
       "Duplicate Header" => "value 1, value 2"
-    }
+    },
+    params: %{}
   }}
   ```
 
@@ -90,7 +92,21 @@ defmodule HttpMessageParser.Parser do
     path: "/users/5",
     http_version: nil,
     body: "",
-    headers: %{}
+    headers: %{},
+    params: %{}
+  }}
+  ```
+
+  Query parameters in request messages can be captured with `:params` property:
+  ```
+  iex> HttpMessageParser.parse_request "GET /users/6?format=json"
+  {:ok, %HttpMessageParser.Request{
+    method: :get,
+    path: "/users/6",
+    http_version: nil,
+    body: "",
+    headers: %{},
+    params: %{"format" => "json"}
   }}
   ```
 
@@ -169,7 +185,8 @@ defmodule HttpMessageParser.Parser do
               path: request_line.path,
               http_version: request_line.version,
               body: body,
-              headers: headers
+              headers: headers,
+              params: request_line.params
             }}
   end
 
@@ -202,10 +219,12 @@ defmodule HttpMessageParser.Parser do
   end
 
   defp parse_request_line(line) do
-    with [token_1, _token_2 = path, token_3] <- split_parts(line, " ", 3),
+    with [token_1, token_2, token_3] <- split_parts(line, " ", 3),
          {:ok, method} <- parse_request_method(token_1),
+         %URI{path: path, query: query_string} <- URI.parse(token_2),
+         params <- URI.decode_query(to_string(query_string)),
          {:ok, version} <- parse_http_version(token_3, true),
-         do: {:ok, %{method: method, path: path, version: version}}
+         do: {:ok, %{method: method, path: path, params: params, version: version}}
   end
 
   defp parse_request_method(token) do

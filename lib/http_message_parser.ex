@@ -6,7 +6,7 @@ defmodule HttpMessageParser.Request do
     * `:http_version` - HTTP version specified by the request
     * `:body` - request body
     * `:headers` - HTTP headers as an orddict (e.g., `[{"Accept", "application/json"}]`)
-    * `:params` - Query parameters as a map, keyword, or orddict
+    * `:params` - Query parameters as a map
   """
   @enforce_keys [:method, :path]
   defstruct method: nil, path: nil, http_version: nil, headers: %{}, body: "", params: %{}
@@ -16,7 +16,7 @@ defmodule HttpMessageParser.Request do
   @type path :: binary | any
   @type http_version :: binary
   @type body :: binary | charlist | iodata | {:form, [{atom, any}]} | {:file, binary} | any
-  @type params :: map | keyword | [{binary, binary}] | any
+  @type params :: map
 
   @type t :: %__MODULE__{
           method: method,
