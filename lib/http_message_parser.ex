@@ -215,8 +215,8 @@ defmodule HttpMessageParser do
   {:error, :empty_message}
   ```
   """
-  @spec parse_request(binary) :: {:ok, HttpMessageParser.Request} | {:error, atom | {atom, binary}}
+  @spec parse_request(binary) :: {:ok, HttpMessageParser.Request.t} | {:error, atom | {atom, binary}}
   defdelegate parse_request(message), to: HttpMessageParser.Parser
-  @spec parse_response(binary) :: {:ok, HttpMessageParser.Response} | {:error, atom | {atom, binary}}
+  @spec parse_response(binary) :: {:ok, HttpMessageParser.Response.t} | {:error, atom | {atom, binary}}
   defdelegate parse_response(message), to: HttpMessageParser.Parser
 end

@@ -18,7 +18,7 @@ defmodule HttpMessageParser.Parser do
   ]
   @http_versions ["HTTP/0.9", "HTTP/1.0", "HTTP/1.1", "HTTP/2.0", "HTTP/2"]
 
-  @spec parse_request(binary) :: {:ok, Request} | {:error, atom | {atom, binary}}
+  @spec parse_request(binary) :: {:ok, Request.t} | {:error, atom | {atom, binary}}
   def parse_request(message) do
     with {:ok, %{header: header, body: body}} <- parse_message(message),
          {:ok, %{title: request_line, headers: headers}} <- parse_header(header),
@@ -36,7 +36,7 @@ defmodule HttpMessageParser.Parser do
             }}
   end
 
-  @spec parse_response(binary) :: {:ok, Response} | {:error, atom | {atom, any}}
+  @spec parse_response(binary) :: {:ok, Response.t} | {:error, atom | {atom, any}}
   def parse_response(message) do
     with {:ok, %{header: header, body: body}} <- parse_message(message),
          {:ok, %{title: status_line, headers: headers}} <- parse_header(header),
