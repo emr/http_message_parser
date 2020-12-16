@@ -9,7 +9,7 @@ defmodule HttpMessageParser.Request do
     * `:params` - Query parameters as a map
   """
   @enforce_keys [:method, :path]
-  defstruct method: nil, path: nil, http_version: nil, headers: %{}, body: "", params: %{}
+  defstruct method: nil, path: nil, http_version: nil, headers: [], body: "", params: %{}
 
   @type method :: :get | :post | :put | :patch | :delete | :options | :head
   @type headers :: [{atom, binary}] | [{binary, binary}] | %{binary => binary} | any

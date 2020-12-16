@@ -15,7 +15,7 @@ defmodule HttpMessageParser.Parser do
     path: "/users/1",
     http_version: "HTTP/1.1",
     body: "",
-    headers: %{},
+    headers: [],
     params: %{}
   }}
   ```
@@ -27,12 +27,12 @@ defmodule HttpMessageParser.Parser do
     status_code: 200,
     http_version: "HTTP/0.9",
     body: "",
-    headers: %{}
+    headers: []
   }}
 
   Headers are separated by lines, and each line is separated by colons.
   Spaces on the key side are preserved. However, spaces on the value side are removed.
-  When duplicated keys are provided, only the last one is preserved.
+  When duplicate keys are provided, both are added to the list.
   Here is a full example that covers all these cases:
   ```
   iex> HttpMessageParser.parse_request "POST /users/3 HTTP/1.1
@@ -49,13 +49,14 @@ defmodule HttpMessageParser.Parser do
     path: "/users/3",
     http_version: "HTTP/1.1",
     body: "first_name=john&last_name=doe",
-    headers: %{
-      "Connection" => "keep-alive",
-      "Accept" => "text/*",
-      "Host" => "github.com",
-      " Spaced Header  Example  " => "example value",
-      "Duplicate Header" => "value 1, value 2"
-    },
+    headers: [
+      {"Connection", "keep-alive"},
+      {"Accept", "text/*"},
+      {"Host", "github.com"},
+      {" Spaced Header  Example  ", "example value"},
+      {"Duplicate Header", "value 1"},
+      {"Duplicate Header", "value 2"}
+    ],
     params: %{}
   }}
   ```
@@ -74,13 +75,13 @@ defmodule HttpMessageParser.Parser do
     status_code: 200,
     http_version: "HTTP/0.9",
     body: "{\"ok\": true}",
-    headers: %{
-      "Server" => "nginx/1.14.0 (Ubuntu)",
-      "Date" => "Mon, 14 Dec 2020 12:40:51 GMT",
-      "Content-type" => "text/html; charset=UTF-8",
-      "Connection" => "close",
-      " Spaced Header  Example  " => "example value"
-    }
+    headers: [
+      {"Server", "nginx/1.14.0 (Ubuntu)"},
+      {"Date", "Mon, 14 Dec 2020 12:40:51 GMT"},
+      {"Content-type", "text/html; charset=UTF-8"},
+      {"Connection", "close"},
+      {" Spaced Header  Example  ", "example value"}
+    ]
   }}
   ```
 
@@ -92,7 +93,7 @@ defmodule HttpMessageParser.Parser do
     path: "/users/5",
     http_version: nil,
     body: "",
-    headers: %{},
+    headers: [],
     params: %{}
   }}
   ```
@@ -105,7 +106,7 @@ defmodule HttpMessageParser.Parser do
     path: "/users/6",
     http_version: nil,
     body: "",
-    headers: %{},
+    headers: [],
     params: %{"format" => "json"}
   }}
   ```
@@ -263,24 +264,20 @@ defmodule HttpMessageParser.Parser do
     end
   end
 
-  defp parse_headers(""), do: {:ok, %{}}
+  defp parse_headers(""), do: {:ok, []}
 
   defp parse_headers(header) do
     header
     |> String.split("\n")
-    |> parse_headers(%{})
+    |> parse_headers([])
   end
 
   defp parse_headers([], parsed), do: {:ok, parsed}
 
   defp parse_headers([token | tokens], parsed) do
     case String.split(token, ~r/\:\ {0,}/, parts: 2) do
-      [key, value] ->
-        parsed = Map.update(parsed, key, value, fn curr -> curr <> ", " <> value end)
-        parse_headers(tokens, parsed)
-
-      _ ->
-        {:error, {:invalid_header, token}}
+      [key, value] -> parse_headers(tokens, parsed ++ [{key, value}])
+      _ -> {:error, {:invalid_header, token}}
     end
   end
 
