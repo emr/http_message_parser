@@ -9,7 +9,7 @@ defmodule HttpMessageParser.Request do
     * `:params` - Query parameters as a map
   """
   @enforce_keys [:method, :path]
-  defstruct method: nil, path: nil, http_version: nil, headers: [], body: "", params: %{}
+  defstruct method: nil, path: nil, http_version: nil, headers: [], body: nil, params: %{}
 
   @type method :: :get | :post | :put | :patch | :delete | :options | :head
   @type headers :: [{atom, binary}] | [{binary, binary}] | %{binary => binary} | any
@@ -37,7 +37,7 @@ defmodule HttpMessageParser.Response do
     * `:headers` - HTTP headers as an orddict (e.g., `[{"Accept", "application/json"}]`)
   """
   @enforce_keys [:status_code, :http_version]
-  defstruct status_code: nil, http_version: nil, body: "", headers: %{}
+  defstruct status_code: nil, http_version: nil, body: nil, headers: %{}
 
   @type t :: %__MODULE__{
           status_code: binary,
@@ -64,7 +64,7 @@ defmodule HttpMessageParser do
     method: :get,
     path: "/users/1",
     http_version: "HTTP/1.1",
-    body: "",
+    body: nil,
     headers: [],
     params: %{}
   }}
@@ -76,14 +76,14 @@ defmodule HttpMessageParser do
   {:ok, %HttpMessageParser.Response{
     status_code: 200,
     http_version: "HTTP/0.9",
-    body: "",
+    body: nil,
     headers: []
   }}
   iex> HttpMessageParser.parse_response "HTTP/2 200"
   {:ok, %HttpMessageParser.Response{
     status_code: 200,
     http_version: "HTTP/2",
-    body: "",
+    body: nil,
     headers: []
   }}
   ```
@@ -150,7 +150,7 @@ defmodule HttpMessageParser do
     method: :post,
     path: "/users/5",
     http_version: nil,
-    body: "",
+    body: nil,
     headers: [],
     params: %{}
   }}
@@ -163,7 +163,7 @@ defmodule HttpMessageParser do
     method: :get,
     path: "/users/6",
     http_version: nil,
-    body: "",
+    body: nil,
     headers: [],
     params: %{"format" => "json"}
   }}

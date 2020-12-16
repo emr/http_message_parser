@@ -55,7 +55,7 @@ defmodule HttpMessageParser.Parser do
   defp parse_message(""), do: {:error, :empty_message}
 
   defp parse_message(message) do
-    [header, body] = split_parts(message, "\n\n", 2)
+    [header, body] = split_parts(message, "\n\n", 2, nil)
     {:ok, %{header: header, body: body}}
   end
 
@@ -126,10 +126,10 @@ defmodule HttpMessageParser.Parser do
     end
   end
 
-  def split_parts(string, by, length) do
+  def split_parts(string, by, length, fill_with \\ "") do
     case String.split(string, by, parts: length) do
       parts when length(parts) == length -> parts
-      parts -> parts ++ Enum.map(length(parts)..(length - 1), fn _ -> "" end)
+      parts -> parts ++ Enum.map(length(parts)..(length - 1), fn _ -> fill_with end)
     end
   end
 end
