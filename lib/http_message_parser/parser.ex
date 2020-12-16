@@ -254,8 +254,9 @@ defmodule HttpMessageParser.Parser do
   end
 
   defp parse_status_code(token) do
-    with true <- HttpMessageParser.StatusCode.valid?(token),
-         [code | _] <- String.split(token, " ", parts: 2) do
+    with [maybe_code | _] <- String.split(token, " ", parts: 2),
+         true <- HttpMessageParser.StatusCode.valid?(maybe_code),
+         [code | _] <- String.split(maybe_code, " ", parts: 2) do
       {:ok, String.to_integer(code)}
     else
       _ -> {:error, {:invalid_status_code, token}}
