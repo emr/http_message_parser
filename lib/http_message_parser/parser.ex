@@ -18,6 +18,14 @@ defmodule HttpMessageParser.Parser do
   ]
   @http_versions ["HTTP/0.9", "HTTP/1.0", "HTTP/1.1", "HTTP/2.0", "HTTP/2"]
 
+  @spec parse(binary) :: {:ok, Request.t | Response.t} | {:error, atom | {atom, binary}}
+  def parse(message) do
+    case maybe_request = parse_request(message) do
+      {:ok, _} -> maybe_request
+      _ -> parse_response(message)
+    end
+  end
+
   @spec parse_request(binary) :: {:ok, Request.t} | {:error, atom | {atom, binary}}
   def parse_request(message) do
     with {:ok, %{header: header, body: body}} <- parse_message(message),

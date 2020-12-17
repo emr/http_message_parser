@@ -53,9 +53,9 @@ defmodule HttpMessageParser do
 
   ## Parsing Messages
 
-  Use `HttpMessageParser.parse_request` for parsing request messages.
+  Use `parse_request/1` for parsing request messages.
 
-  Use `HttpMessageParser.parse_response` for parsing response messages.
+  Use `parse_response/1` for parsing response messages.
 
   When just a valid request line is passed, returns a request struct with empty body and headers.
   ```
@@ -169,6 +169,32 @@ defmodule HttpMessageParser do
   }}
   ```
 
+  ## Inferring the message's type
+
+  When you don't know the type of message you have, you can use `parse/1`. It will try to parse
+  the message as a request, if any error occurs, it will try to parse the message as a response.
+  And you will get the result of the process of parsing response.
+  ```
+  iex> HttpMessageParser.parse "GET /users/7"
+  {:ok, %HttpMessageParser.Request{
+    method: :get,
+    path: "/users/7",
+    http_version: nil,
+    body: nil,
+    headers: [],
+    params: %{}
+  }}
+  iex> HttpMessageParser.parse "HTTP/1.1 301 Moved Permanently"
+  {:ok, %HttpMessageParser.Response{
+    status_code: 301,
+    http_version: "HTTP/1.1",
+    body: nil,
+    headers: []
+  }}
+  iex> HttpMessageParser.parse "invalid message"
+  {:error, {:invalid_http_version, "invalid"}}
+  ```
+
   ## Errors
 
   When something invalid or unexpected is encountered, errors are returned with the following shape:
@@ -183,7 +209,7 @@ defmodule HttpMessageParser do
   #### `:invalid_request_method`
   When an invalid request method is passed, returns error with reason `:invalid_request_method`.
   ```
-  iex> HttpMessageParser.parse_request "FETCH /users/6 HTTP/1.1"
+  iex> HttpMessageParser.parse_request "FETCH /users/10 HTTP/1.1"
   {:error, {:invalid_request_method, "FETCH"}}
   ```
 
@@ -197,7 +223,7 @@ defmodule HttpMessageParser do
   #### `:invalid_http_version`
   When an invalid http version is passed, returns error with reason `:invalid_http_version`.
   ```
-  iex> HttpMessageParser.parse_request "GET /users/8 HTTP/3.9"
+  iex> HttpMessageParser.parse_request "GET /users/11 HTTP/3.9"
   {:error, {:invalid_http_version, "HTTP/3.9"}}
   ```
 
@@ -205,7 +231,7 @@ defmodule HttpMessageParser do
   When an invalid header is passed, returns error with reason `:invalid_header`
   and adds the invalid value as the third element to the tupple.
   ```
-  iex> HttpMessageParser.parse_request "GET /user/9 HTTP/1.1\nan-invalid-header"
+  iex> HttpMessageParser.parse_request "GET /user/12 HTTP/1.1\nan-invalid-header"
   {:error, {:invalid_header, "an-invalid-header"}}
   ```
 
@@ -215,6 +241,8 @@ defmodule HttpMessageParser do
   {:error, :empty_message}
   ```
   """
+  @spec parse(binary) :: {:ok, Request.t | Response.t} | {:error, atom | {atom, binary}}
+  defdelegate parse(message), to: HttpMessageParser.Parser
   @spec parse_request(binary) :: {:ok, HttpMessageParser.Request.t} | {:error, atom | {atom, binary}}
   defdelegate parse_request(message), to: HttpMessageParser.Parser
   @spec parse_response(binary) :: {:ok, HttpMessageParser.Response.t} | {:error, atom | {atom, binary}}
